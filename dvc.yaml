@@ -1,0 +1,41 @@
+stages:
+  get_mitre_data:
+    cmd: python src/get_mitre_data.py
+    deps:
+    - src/get_mitre_data.py
+    - ${get_data.mitre_attack_fn}
+    params:  
+    - get_data.divide_paras
+    outs:
+    - ${get_data.data_mitre_fn}
+    - ${get_data.data_mitre_attack_proc_fn}
+    - ${get_data.label2tactic_fn}
+  get_add_data:
+    cmd: python src/get_add_data.py
+    deps:
+    - ${get_data.data_mitre_fn}
+    - ${get_data.tram_fn}
+    - ${get_data.data_mitre_attack_proc_fn}
+    - ${get_data.cti_hal_dn}
+    - ${get_data.rep_dn}
+    - ${get_data.label2tactic_fn}
+    - src/get_add_data.py
+    params:
+    - get_data.ignore_subt
+    - get_data.use_tram_f
+    - get_data.use_reports_f
+    - get_data.add_empty_reports
+    - get_data.add_cti_hal
+    outs:
+    - ${get_data.data_fn}
+  setup_storage:
+    cmd: python src/setup_storage.py
+    deps:
+    - ${get_data.data_fn}
+    - src/setup_storage.py
+    params:
+    - storage.smodel_path
+    - storage.db_type
+    - storage.re_write_db
+    outs:
+    - ${storage.db_path}

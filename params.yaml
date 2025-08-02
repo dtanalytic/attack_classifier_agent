@@ -1,0 +1,22 @@
+get_data:
+  mitre_attack_fn: data/external/enterprise-attack.json
+  tram_fn: data/external/multi_label.json
+  cti_hal_dn: data/external/cti_hal
+  rep_dn: data/external/rep_dn
+  use_tram_f: true
+  use_reports_f: true
+  add_empty_reports: false
+  add_cti_hal: false
+  ignore_subt: true
+  divide_paras: false
+  data_mitre_fn: data/out/mitre.csv
+  data_mitre_attack_proc_fn: data/out/mitre_attack.csv
+  label2tactic_fn: data/out/label2tactic.json
+  data_fn: data/out/mitre_full_df.csv
+storage:
+  smodel_path: 'data/external/models/attack_sent_bert/snapshots/30d285aa0e641ce87a33748a7b3f8f2d8ccfaf42'
+  db_type: 'faiss'
+  search_kwargs: "{'method':'max_marginal', 'fetch_k':10, 'k':3, 'lambda_mult':0.4}"
+  re_write_db: True
+  db_path: 'data/out/attack_db'
+seed: 0
