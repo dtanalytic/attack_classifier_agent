@@ -8,6 +8,12 @@ import pandas as pd
 
 import torch
 
+import requests
+
+from langgraph.graph.message import MessageGraph
+from langgraph.checkpoint.memory import MemorySaver
+from fastcore.basics import store_attr
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, AnyMessage
 
 def set_seed(seed):
     random.seed(seed)
@@ -48,5 +54,85 @@ def form_rag_query(query, rag_db, search_kwargs):
     fin_query = f"Classify given query based on similar texts below, last sentence form like:Output: TTP CODE, example: OUTPUT: T1585:\nQUERY:\"{query}\",\n{rag_s}"
 
     return fin_query
+
+
+
+def send_post_model(messages, model_nm="DSR1DistallQwen32B", temperature=0, max_tokens=1000, token="token"):
+
+    if model_nm=="DSR1DistallQwen32B":
+        url = 'http://10.100.0.31:9092/v1/chat/completions'
+    elif model_nm=="Vikhr12BInstruct":
+        url = 'http://10.100.0.31:9091/v1/chat/completions'
+
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+      "model": model_nm,
+      "messages": messages,
+      "max_tokens": max_tokens,
+      "temperature": temperature
+    }
+    response = requests.post(url, headers=headers, json=data)
+    return response.json()
+
+def ask_nomemory(text, model_nm="DSR1DistallQwen32B", temperature=0, max_tokens=1000, token="token"):
+
+    messages = [
+        {
+          "role": "user",
+          "content": text
+        }
+      ]
+    response = send_post_model(messages, model_nm=model_nm, temperature=temperature, max_tokens=max_tokens, token=token)
+
+    return response['choices'][0]['message']['content']
+
+
+
+class ChatLLM():
+
+    def __init__(self, model_nm, session_id, temperature, max_tokens, token='token'):
+        store_attr()
+
+    def convert_messages(self, message_list):
+        converted = []
+        for msg in message_list:
+            # Определяем роль на основе типа сообщения
+            if msg.__class__.__name__ == 'HumanMessage':
+                role = "user"
+            elif msg.__class__.__name__ == 'AIMessage':
+                role = "assistant"  
+            elif msg.__class__.__name__ == 'SystemMessage':
+                role = "system"
+            else:
+                continue  # Пропускаем неизвестные типы сообщений
+            
+            # Добавляем в результирующий список
+            converted.append({
+                "role": role,
+                "content": msg.content
+            })
+        return converted
+
+
+    def chat_llm(self, messages):
+
+        response = send_post_model(self.convert_messages(messages), model_nm=self.model_nm, temperature=self.temperature, max_tokens=self.max_tokens, token=self.token)
+        return [AIMessage(response['choices'][0]['message']['content'])]
+        
+    def compile(self):
+        builder = MessageGraph()
+        builder.add_node("chat_llm", self.chat_llm)
+        builder.set_entry_point("chat_llm")
+        builder.set_finish_point("chat_llm")
+        
+        memory = MemorySaver()
+        self.graph = builder.compile(checkpointer=memory)
+
+    def ask_memory(self, text):
+        return self.convert_messages(self.graph.invoke([HumanMessage(text)], {"configurable": {"thread_id": self.session_id}}))
+
 
 
