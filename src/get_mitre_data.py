@@ -6,7 +6,7 @@ import re
 from itertools import chain
 import click
 
-from ruamel.yaml import YAML
+from omegaconf import OmegaConf
 
 import sys
 sys.path.append('.')
@@ -15,14 +15,14 @@ from src.spec_funcs import load_mitr, prep_mitr
 @click.command()
 def main():
     
-    conf = YAML().load(open('params.yaml'))
+    conf = OmegaConf.load('params.yaml')
 
     mitre_df, main_descr_df, proc_df = load_mitr(conf['get_data']['mitre_attack_fn'])
     mitre_attack_df = prep_mitr(main_descr_df, proc_df, conf)
     
     # ------------------------
     # сохранение
-    mitre_attack_df[['sentence', 'labels', 'url', 'par_name', 'is_proc']].to_csv(conf['get_data']['data_mitre_attack_proc_fn'], index=False)
+    mitre_attack_df[['sentence', 'labels', 'url', 'name', 'is_proc']].to_csv(conf['get_data']['data_mitre_attack_proc_fn'], index=False)
     
     with open(conf['get_data']['label2tactic_fn'], 'wt') as f_wr:
         json.dump(mitre_attack_df.set_index('labels')['kill_chain_tags'].to_dict(), f_wr)

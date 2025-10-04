@@ -1,7 +1,7 @@
 import re
 import random
 import numpy as np
-from ruamel.yaml import YAML
+from omegaconf import OmegaConf
 
 import pandas as pd
 
@@ -24,7 +24,7 @@ def set_seed(seed):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
 
-conf_seed = YAML().load(open('params.yaml'))
+conf_seed = OmegaConf.load('params.yaml')
 set_seed(conf_seed['seed'])
 
 
@@ -40,7 +40,7 @@ def get_rag_db(conf):
     
     return FAISS.load_local(conf['storage']['db_path'], embed_wrapper, allow_dangerous_deserialization=True)
     
-def form_rag_query(query, rag_db, search_kwargs):
+def form_rag_query(query, prefix, rag_db, search_kwargs):
 
     if 'max_marginal' == search_kwargs['method']:
         assert all([it in search_kwargs.keys() for it in ['fetch_k', 'k', 'lambda_mult']]), 'with max_marginal method all must be in search_kwargs fetch_k, k, lambda_mult'
@@ -51,7 +51,7 @@ def form_rag_query(query, rag_db, search_kwargs):
     s = '\n'.join(l)
     rag_s = f'''List of similar texts are below, among them may be texts with no malicious content, keep this in mind while classifying the given text:\n{s}'''
 
-    fin_query = f"Classify given query based on similar texts below, last sentence form like:Output: TTP CODE, example: OUTPUT: T1585:\nQUERY:\"{query}\",\n{rag_s}"
+    fin_query = prefix+f"\"{query}\",\n{rag_s}"
 
     return fin_query
 
@@ -87,7 +87,7 @@ def ask_nomemory(text, model_nm="DSR1DistallQwen32B", temperature=0, max_tokens=
       ]
     response = send_post_model(messages, model_nm=model_nm, temperature=temperature, max_tokens=max_tokens, token=token)
 
-    return response['choices'][0]['message']['content']
+    return response, response['choices'][0]['message']['content']
 
 
 

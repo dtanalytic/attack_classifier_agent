@@ -7,7 +7,7 @@ import click
 import os
 import glob
 
-from ruamel.yaml import YAML
+from omegaconf import OmegaConf
 
 import sys
 sys.path.append('.')
@@ -15,7 +15,7 @@ sys.path.append('.')
 @click.command()
 def main():
     
-    conf = YAML().load(open('params.yaml'))
+    conf = OmegaConf.load('params.yaml')
     mitre_attack_df = pd.read_csv(conf['get_data']['data_mitre_attack_proc_fn'])
     mitre_attack_df = mitre_attack_df.assign(labels = mitre_attack_df['labels'].map(lambda x:[x]))
 
@@ -41,13 +41,14 @@ def main():
         fns = glob.glob(f"{conf['get_data']['cti_hal_dn']}/**/*.json", recursive=True)
         
         hal_df = pd.concat([pd.read_json(it)[['context', 'technique']].rename(columns={'context':'sentence', 'technique':'labels'})\
-                                .assign(url=f'https://github.com/dessertlab/CTI-HAL/data/{it.split("data/external/cti_hal/")[1]}')
+                                .assign(url=f'https://github.com/dessertlab/CTI-HAL/data{it.split("data/external/cti_hal")[1]}'.replace('\\', '/'))
                             for it in fns], ignore_index=True)
     
         hal_df = hal_df[hal_df['labels'].notna()]
         hal_df.labels=hal_df.labels.map(lambda x: [x])
+        hal_df = hal_df[~hal_df.duplicated(subset='sentence')]
         df = pd.concat([df, hal_df], ignore_index=True)
-
+        
     
     if conf['get_data']['use_reports_f']:
         DN = conf['get_data']['rep_dn']
@@ -89,7 +90,7 @@ def main():
     df = df[df['sentence'].str.split().str.len()>=5].reset_index(drop=True)
     
 
-    df.to_csv(conf['get_data']['data_fn'], index=False)
+    df.to_csv(conf['get_data']['data_fn'], index=False, escapechar='\\')
     
 if __name__=='__main__':
 

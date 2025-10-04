@@ -4,7 +4,7 @@ import joblib
 import time
 import click
 
-from ruamel.yaml import YAML
+from omegaconf import OmegaConf
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -24,9 +24,9 @@ def main():
 
         logger = ActivityLogger().get_logger(__file__)
         
-        conf = YAML().load(open('params.yaml'))
-        base_df = pd.read_csv(conf['get_data']['data_fn'])
-    
+        conf = OmegaConf.load('params.yaml')
+        base_df = pd.read_csv(conf['get_data']['split_fn']).query('split=="tr"')
+
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
         embed_wrapper = HuggingFaceEmbeddings(model_name=conf['storage']['smodel_path'],
@@ -36,7 +36,7 @@ def main():
         sents = base_df['sentence'].tolist()
         
         metas = [{'techniques':', '.join(eval(row.origin_ttp)),'tactics': ', '.join(eval(row.labels)),
-                  'url':row.url, 'name': row.par_name,
+                  'url':row.url, 'name': row.name,
                   } for row in base_df.itertuples()]
 
         logger.info(f'Подготовили данные для загрузки в хранилище')

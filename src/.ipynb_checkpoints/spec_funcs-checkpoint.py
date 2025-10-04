@@ -5,14 +5,13 @@ import json
 
 from itertools import chain
 import re 
-from ruamel.yaml import YAML
-
+from omegaconf import OmegaConf
 
 import sys
 sys.path.append('.')
 
 from src.funcs import set_seed
-conf_seed = YAML().load(open('params.yaml'))
+conf_seed = OmegaConf.load('params.yaml')
 set_seed(conf_seed['seed'])
 
 
@@ -36,6 +35,11 @@ def load_mitr(fn):
                             columns=['id', 'name', 'sentence', 'labels', 'url', 'subtechnique', 'platforms', 'kill_chain_phases',
                                      'created', 'doc_refs', 'permissions', 'effective_permissions', 'data_sources', 'defense_bypassed'])
     mitre_df['proc_flag'] = False
+
+    parent_names_df = mitre_df.loc[~mitre_df['labels'].str.contains(r'\.'), ['name', 'labels']].rename(columns={'name':'parent_name', 'labels':'key'})
+    mitre_df = mitre_df.assign(key=lambda x: x['labels'].str.extract(r'(.*)\..*')).merge(parent_names_df, how='left', on='key')
+    mitre_df['name'] = mitre_df['name'].mask(mitre_df['parent_name'].notnull(), mitre_df['parent_name'].str.cat(mitre_df['name'], sep=': '))
+    mitre_df = mitre_df.drop(columns=['parent_name', 'key'])
     
     mittre_l = []
     for _, row in mitre_df.iterrows():
@@ -98,3 +102,22 @@ def prep_mitr(main_descr_df, proc_df, conf):
 
     return mitre_attack_df
 
+def replace_entities_upd(s, pat_d):
+    # for key, val in pat_d.items():
+    #     s = re.sub(val, key, s) if re.search(val, s) else s
+
+    for nm, pat in pat_d.items():
+      if nm=='regexp_fpath_upd':
+          s = re.sub(pat, r'\1regexp_fpath', s) if re.search(pat, s) else s
+      else:
+          s = re.sub(pat, nm, s) if re.search(pat, s) else s
+
+    return s
+
+def replace_entities(s, pat_d):
+    
+    w_l = s.split()
+    for key, val in pat_d.items():    
+        w_l = [w if not re.search(val, w.lower()) else re.sub(val, key, w.lower()) for w in w_l]
+    
+    return ' '.join(w_l)

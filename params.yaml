@@ -6,13 +6,16 @@ get_data:
   use_tram_f: true
   use_reports_f: true
   add_empty_reports: false
-  add_cti_hal: false
+  add_cti_hal: true
   ignore_subt: true
   divide_paras: false
+  replace_entities: true
   data_mitre_fn: data/out/mitre.csv
   data_mitre_attack_proc_fn: data/out/mitre_attack.csv
   label2tactic_fn: data/out/label2tactic.json
   data_fn: data/out/mitre_full_df.csv
+  split_fn: data/out/split_df.csv
+  ttp_mlb_fn: data/mlb_ttp
 storage:
   smodel_path: 'data/external/models/attack_sent_bert/snapshots/30d285aa0e641ce87a33748a7b3f8f2d8ccfaf42'
   db_type: 'faiss'
@@ -20,3 +23,5 @@ storage:
   re_write_db: True
   db_path: 'data/out/attack_db'
 seed: 0
+val_ts_size: 0.15
+val_nmitr: true

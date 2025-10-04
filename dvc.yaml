@@ -28,6 +28,15 @@ stages:
     - get_data.add_cti_hal
     outs:
     - ${get_data.data_fn}
+  split_data:
+    cmd: python src/split_data.py
+    deps:
+    - src/split_data.py
+    params:
+    - val_nmitr
+    outs:
+    - ${get_data.ttp_mlb_fn}
+    - ${get_data.split_fn}
   setup_storage:
     cmd: python src/setup_storage.py
     deps:
