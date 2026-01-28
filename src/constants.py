@@ -1,8 +1,44 @@
 import re
 import logging
+from langchain_core.prompts import PromptTemplate
+
+from pydantic import BaseModel, Field
+
+from typing import List
 
 LOG_FN = 'journal.log'
 
+
+system_template = (
+        "You are an expert in cybersecurity analysis."
+        "Analyze a given text for the MITRE ATT&CK tactics and techniques described or mentioned in it."
+        "Carefully examine the applicability based on the context - "
+        "Linux or Windows, what language is used, what software impacted. Only include relevant TTPs."
+        "You will be provided with rag data after key phrase 'Known information:', keep it in mind to better classify input text"
+        "Return MITRE ATT&CK IDs, corresponding TTP names, and reasoning according to instructions:{parser_instructions}"
+        "Example:\n"
+        '[{{"mitre_id": "T1001", "mitre_name":"Data Obfuscation", "reason":"an exact extract from the analyzed text'
+        'that acts as a proof and demonstrates the usage of the TTP"}}]'
+        'If no TTPs are found, return an empty array like this:\n[]'
+    )
+
+user_template = '''
+Known information:
+{context}
+Based on the above known information (rag), respond to the user's question with a json described in system prompt.
+Text to analyse:
+{input}
+'''
+document_prompt = PromptTemplate.from_template('Contents:"{page_content}", Techniques - {techniques}, Tactics - {tactics}, MITRE title - {name}, MITRE url - {url}')
+
+
+class TTP(BaseModel):
+    mitre_id: str = Field(..., description='MITRE ATT&CK TTP code', pattern=r'^(T\d{4}(?:\.\d{3})?)$')
+    mitre_name: str = Field(..., description='Title of MITRE ATT&CK TTP code', min_length=2, strict=True)
+    reason: str = Field(..., description='Exact part of the input text where MITRE ATT&CK TTP was found', min_length=2, strict=True)
+
+class TTPList(BaseModel):
+    ttps: List[TTP]
 
 
 regexp_fname = re.compile(r'[a-zA-Z0-9_-]+\.[a-zA-Z0-9_]{3,}')
@@ -178,13 +214,10 @@ regexp_url_upd = re.compile(
 
 
 
-# regexp_registry = re.compile('^((hkey_local_machine|hkey_classes_root|hkey_current_user|hkey_users|hkey_current_config|'
-#                              'hklm|hlm|hkcr|hcr|hkcu|hcu|hkcc|hcc)[ ]?[/\\][ ]?'
-#                              '([a-z0-9\s_@\-\^!#.\:\/\$%&+={}\[\]\\* ])+)$')
-
 regexp_registry = re.compile('^((hkey_local_machine|hkey_classes_root|hkey_current_user|hkey_users|hkey_current_config|'
-                             'hklm|hlm|hkcr|hcr|hkcu|hcu|hkcc|hcc)([ ]?[/\\][ ]?'
-                             '([a-z0-9\s_@\-\^!#.\:\/\$%&+={}\[\]\\* ])+)?)$')
+                             'hklm|hlm|hkcr|hcr|hkcu|hcu|hkcc|hcc)[ ]?[/\\][ ]?'
+                             '([a-z0-9\s_@\-\^!#.\:\/\$%&+={}\[\]\\* ])+)$')
+
 
 # new version
 regexp_registry_upd = re.compile(r'''\b((hkey_local_machine|hkey_classes_root|hkey_current_user|hkey_users|hkey_current_config|

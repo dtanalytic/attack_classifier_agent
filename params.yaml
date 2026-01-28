@@ -19,9 +19,17 @@ get_data:
 storage:
   smodel_path: 'data/external/models/attack_sent_bert/snapshots/30d285aa0e641ce87a33748a7b3f8f2d8ccfaf42'
   db_type: 'faiss'
-  search_kwargs: "{'method':'max_marginal', 'fetch_k':10, 'k':3, 'lambda_mult':0.4}"
   re_write_db: True
   db_path: 'data/out/attack_db'
+train_eval:
+  model: vikhr # vikhr gpt
+  rag_type: embed # hybrid, word, embed
+  search_type: mmr # mmr,
+  lambda_mult: 0.5
+  rag_k: 5
+  fetch_k: 20
+  m_fn: 'data/out/m.json'
+  pred_df_fn: 'data/out/pred_df.csv'
 seed: 0
 val_ts_size: 0.15
 val_nmitr: true
