@@ -21,12 +21,13 @@ storage:
   db_type: 'faiss'
   re_write_db: True
   db_path: 'data/out/attack_db'
+  bm25_path: 'data/out/bm25_retriever.pkl'
 train_eval:
   model: vikhr # vikhr gpt
   rag_type: embed # hybrid, word, embed
   search_type: mmr # mmr,
   lambda_mult: 0.5
-  rag_k: 5
+  rag_k: (5,) #
   fetch_k: 20
   m_fn: 'data/out/m.json'
   pred_df_fn: 'data/out/pred_df.csv'
