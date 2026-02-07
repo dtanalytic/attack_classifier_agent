@@ -25,6 +25,7 @@ storage:
 train_eval:
   model: vikhr # vikhr gpt
   rag_type: embed # hybrid, word, embed
+  use_bert: true
   search_type: mmr # mmr,
   lambda_mult: 0.5
   rag_k: (5,) #

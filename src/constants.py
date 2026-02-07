@@ -29,6 +29,16 @@ Based on the above known information (rag), respond to the user's question with 
 Text to analyse:
 {input}
 '''
+
+user_bert_template = '''Custom model predictions:
+{model_preds}
+Known information:
+{context}
+Based on the above known information (rag), and custom model predictions respond to the user's question with a json described in system prompt.
+Text to analyse:
+{input}
+'''
+
 document_prompt = PromptTemplate.from_template('Contents:"{page_content}", Techniques - {techniques}, Tactics - {tactics}, MITRE title - {name}, MITRE url - {url}')
 
 

@@ -58,5 +58,6 @@ stages:
     - train_eval.rag_k
     - train_eval.lambda_mult
     - train_eval.fetch_k
+    - train_eval.use_bert
     metrics:
     - ${train_eval.m_fn}
