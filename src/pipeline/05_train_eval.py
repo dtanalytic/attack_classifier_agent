@@ -8,6 +8,8 @@ import json
 
 from omegaconf import OmegaConf
 from dotenv import load_dotenv
+from tqdm.auto import tqdm
+
 
 
 from sklearn.metrics import (log_loss, roc_auc_score, average_precision_score, f1_score, 
@@ -25,6 +27,7 @@ from langchain_core.language_models.fake_chat_models import ParrotFakeChatModel
 from langchain_core.output_parsers import StrOutputParser
 
 load_dotenv('cred.env')
+tqdm.pandas(desc='progress bar')
 
 def get_answer(x, qa_chain, parser_instructions, pred_bert=False):
 
@@ -59,10 +62,10 @@ def main():
 
         np.random.seed(conf['seed'])
 
-        # pred_df = pd.read_csv(conf['get_data']['split_fn']).query('split=="val"')
-        # # ----------------------------
-        # # временно
-        # pred_df.sample(n=100).to_csv('data/val_pred.csv')
+        pred_df = pd.read_csv(conf['get_data']['split_fn']).query('split=="val"')
+        # ----------------------------
+        # временно
+        pred_df.sample(n=1000).to_csv('data/val_pred.csv')
         if conf['train_eval']['use_bert']:
             pred_df = pd.read_csv('data/bert_val_pred.csv')
         else:
@@ -142,9 +145,7 @@ def main():
         mlb_ttp = joblib.load(conf['get_data']['ttp_mlb_fn'])        
         # pred_df['resp'] = pred_df['sentence'].map(lambda x: get_answer(x, qa_chain, parser))
 
-        pred_df['resp'] = pred_df.apply(lambda x: get_answer(x, qa_chain, parser.get_format_instructions(), pred_bert=conf['train_eval']['use_bert']), axis=1)
 
-        
         # debug part
         parser_deb = StrOutputParser()
         llm_model_deb = ParrotFakeChatModel()
@@ -160,12 +161,15 @@ def main():
         
         qa_chain_deb = create_retrieval_chain(retriever=retriever, combine_docs_chain=doc_chain_deb)
         
-        pred_df['query'] = pred_df.apply(lambda x: get_answer(x, qa_chain_deb, parser_instructions='parser_instructions', pred_bert=conf['train_eval']['use_bert']), axis=1)
+        pred_df['query'] = pred_df.progress_apply(lambda x: get_answer(x, qa_chain_deb, parser_instructions='parser_instructions', pred_bert=conf['train_eval']['use_bert']), axis=1)
+        
+        pred_df['resp'] = pred_df.progress_apply(lambda x: get_answer(x, qa_chain, parser.get_format_instructions(), pred_bert=conf['train_eval']['use_bert']), axis=1)
 
 
         
         # остальные error
         pred_df['pred_ttp'] = pred_df['resp'].map(lambda x: [it.mitre_id.split('.')[0] for it in x.ttps] if isinstance(x, TTPList) else [])
+        pred_df['pred_ttp'] = pred_df['pred_ttp'].map(lambda x: list(set(x)))
         pred_df['pred_enc_ttp'] = pred_df['pred_ttp'].map(lambda x: mlb_ttp.transform([x])[0].tolist())
 
         p_micro, r_micro, f1_micro, _ = precision_recall_fscore_support(pred_df['enc_ttp'].tolist(), pred_df['pred_enc_ttp'].tolist(), average='micro')

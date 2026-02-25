@@ -24,14 +24,18 @@ storage:
   bm25_path: 'data/out/bm25_retriever.pkl'
 train_eval:
   model: vikhr # vikhr gpt
-  rag_type: embed # hybrid, word, embed
-  use_bert: true
+  rag_type: hybrid # hybrid, word, embed
+  use_bert: false
   search_type: mmr # mmr,
   lambda_mult: 0.5
-  rag_k: (5,) #
+  rag_k: (2,5) #
   fetch_k: 20
   m_fn: 'data/out/m.json'
   pred_df_fn: 'data/out/pred_df.csv'
+prod:
+  ttp_mlb_fn: data/prod/mlb_ttp
+  bm25_path: 'data/prod/bm25_retriever.pkl'
+  db_path: 'data/prod/attack_db'
 seed: 0
 val_ts_size: 0.15
 val_nmitr: true

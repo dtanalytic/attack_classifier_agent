@@ -37,16 +37,20 @@ def main():
         
         sents = base_df['sentence'].tolist()
         
-        metas = [{'techniques':', '.join(eval(row.origin_ttp)),'tactics': ', '.join(eval(row.labels)),
-                  'url':row.url, 'name': row.name,
-                  } for row in base_df.itertuples()]
+        # metas = [{'techniques':', '.join(eval(row.origin_ttp)),'tactics': ', '.join(eval(row.labels)),
+        #           'url':row.url, 'name': row.name,
+        #           } for row in base_df.itertuples()]
 
+        metas = [{'techniques':', '.join(eval(row.origin_ttp)) if len(eval(row.origin_ttp)) >0 else np.nan,'tactics': ', '.join(eval(row.labels)) if len(eval(row.labels)) >0 else np.nan,
+          'url':row.url, 'name': row.name,
+          } for row in base_df.itertuples()]
+        
         logger.info(f'Подготовили данные для загрузки в хранилище')
         
         if  conf['storage']['re_write_db']:
             start = time.time()
 
-            prep_func = partial(preprocess_text, to_lower=False, save_text=True, stop_words_l=False, 
+            prep_func = partial(preprocess_text, to_lower=False, save_text=False, stop_words_l=False, 
                                                     save_only_words=False, lang='english',  min_len_token=3, max_len_token=10, stem_lemm_flag='stem')
             
             bm_retriever = BM25Retriever.from_texts(texts=sents, metadatas=metas, k=2, ids=range(len(sents)),

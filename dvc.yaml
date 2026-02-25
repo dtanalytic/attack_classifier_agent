@@ -48,9 +48,12 @@ stages:
     - storage.re_write_db
     outs:
     - ${storage.db_path}
+    - ${storage.bm25_path}
   train_eval:
     cmd: python src/pipeline/05_train_eval.py
     deps:
+    - ${storage.bm25_path}
+    - ${storage.db_path}
     - src/pipeline/05_train_eval.py
     params:
     - train_eval.model

@@ -9,12 +9,26 @@ from typing import List
 LOG_FN = 'journal.log'
 
 
+# system_template = (
+#         "You are an expert in cybersecurity analysis."
+#         "Analyze a given text for the MITRE ATT&CK tactics and techniques described or mentioned in it."
+#         "Carefully examine the applicability based on the context - "
+#         "Linux or Windows, what language is used, what software impacted. Only include relevant TTPs."
+#         "You will be provided with rag data after key phrase 'Known information:', keep it in mind to better classify input text"
+#         "Return MITRE ATT&CK IDs, corresponding TTP names, and reasoning according to instructions:{parser_instructions}"
+#         "Example:\n"
+#         '[{{"mitre_id": "T1001", "mitre_name":"Data Obfuscation", "reason":"an exact extract from the analyzed text'
+#         'that acts as a proof and demonstrates the usage of the TTP"}}]'
+#         'If no TTPs are found, return an empty array like this:\n[]'
+#     )
+
 system_template = (
         "You are an expert in cybersecurity analysis."
         "Analyze a given text for the MITRE ATT&CK tactics and techniques described or mentioned in it."
         "Carefully examine the applicability based on the context - "
         "Linux or Windows, what language is used, what software impacted. Only include relevant TTPs."
         "You will be provided with rag data after key phrase 'Known information:', keep it in mind to better classify input text"
+        "Each example in rag will be provided with metadata: Techniques, Tactics, MITRE title, MITRE url. If text contains no malicios content, metadata will be filled with nans"
         "Return MITRE ATT&CK IDs, corresponding TTP names, and reasoning according to instructions:{parser_instructions}"
         "Example:\n"
         '[{{"mitre_id": "T1001", "mitre_name":"Data Obfuscation", "reason":"an exact extract from the analyzed text'
@@ -34,7 +48,7 @@ user_bert_template = '''Custom model predictions:
 {model_preds}
 Known information:
 {context}
-Based on the above known information (rag), and custom model predictions respond to the user's question with a json described in system prompt.
+Based on the above known information (rag), and custom model predictions (may be wrong) respond to the user's question with a json described in system prompt.
 Text to analyse:
 {input}
 '''
