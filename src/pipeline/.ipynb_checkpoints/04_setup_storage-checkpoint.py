@@ -37,9 +37,6 @@ def main():
         
         sents = base_df['sentence'].tolist()
         
-        # metas = [{'techniques':', '.join(eval(row.origin_ttp)),'tactics': ', '.join(eval(row.labels)),
-        #           'url':row.url, 'name': row.name,
-        #           } for row in base_df.itertuples()]
 
         metas = [{'techniques':', '.join(eval(row.origin_ttp)) if len(eval(row.origin_ttp)) >0 else np.nan,'tactics': ', '.join(eval(row.labels)) if len(eval(row.labels)) >0 else np.nan,
           'url':row.url, 'name': row.name,

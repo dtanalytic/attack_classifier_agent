@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 from tqdm.auto import tqdm
 
 
-
 from sklearn.metrics import (log_loss, roc_auc_score, average_precision_score, f1_score, 
                             precision_recall_fscore_support, confusion_matrix)
 
@@ -65,7 +64,7 @@ def main():
         pred_df = pd.read_csv(conf['get_data']['split_fn']).query('split=="val"')
         # ----------------------------
         # временно
-        pred_df.sample(n=1000).to_csv('data/val_pred.csv')
+        pred_df.sample(n=10).to_csv('data/val_pred.csv')
         if conf['train_eval']['use_bert']:
             pred_df = pd.read_csv('data/bert_val_pred.csv')
         else:

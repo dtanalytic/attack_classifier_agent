@@ -5,7 +5,6 @@ get_data:
   rep_dn: data/external/rep_dn
   use_tram_f: true
   use_reports_f: true
-  add_empty_reports: false
   add_cti_hal: true
   ignore_subt: true
   divide_paras: false
@@ -33,6 +32,7 @@ train_eval:
   m_fn: 'data/out/m.json'
   pred_df_fn: 'data/out/pred_df.csv'
 prod:
+  smodel_path: 'data/external/models/attack_sent_bert/snapshots/30d285aa0e641ce87a33748a7b3f8f2d8ccfaf42'
   ttp_mlb_fn: data/prod/mlb_ttp
   bm25_path: 'data/prod/bm25_retriever.pkl'
   db_path: 'data/prod/attack_db'

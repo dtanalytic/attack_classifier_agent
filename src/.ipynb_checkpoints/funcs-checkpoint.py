@@ -7,6 +7,16 @@ import pandas as pd
 
 import torch
 
+import nltk
+from nltk.stem import SnowballStemmer
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+
+import string
+from string import punctuation
+
+from pymystem3 import Mystem
+
 import requests
 
 from fastcore.basics import store_attr
@@ -132,17 +142,17 @@ class Vikhr(BaseChatModel):
 
 
 
-def get_rag_db(conf):
+def get_rag_db(conf, key='storage'):
     from langchain_community.vectorstores import FAISS
     from langchain_huggingface import HuggingFaceEmbeddings
     import torch
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    embed_wrapper = HuggingFaceEmbeddings(model_name=conf['storage']['smodel_path'],
+    embed_wrapper = HuggingFaceEmbeddings(model_name=conf[key]['smodel_path'],
                                                model_kwargs={'device': device})
     
-    return FAISS.load_local(conf['storage']['db_path'], embed_wrapper, allow_dangerous_deserialization=True)
+    return FAISS.load_local(conf[key]['db_path'], embed_wrapper, allow_dangerous_deserialization=True)
     
 def form_rag_query(query, prefix, rag_db, search_kwargs):
 

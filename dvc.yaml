@@ -24,7 +24,6 @@ stages:
     - get_data.ignore_subt
     - get_data.use_tram_f
     - get_data.use_reports_f
-    - get_data.add_empty_reports
     - get_data.add_cti_hal
     outs:
     - ${get_data.data_fn}
