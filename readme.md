@@ -4,10 +4,9 @@
     - cd attack_classifier_agent
     - conda create -n temp_env python=3.10.17 (conda env remove -n temp_env)
     - pip install -r requirements.txt
-    - может понадобиться докачать пакеты nltk: python -c "import nltk;nltk.download('punkt')"
 - добавить данные. Создать папки:
-    - data, data/out, data/prod
-    - data/external и положить:
+    - mkdir data, data/out, data/prod, data/external
+    - в data/external положить:
         - файл enterprise-attack.json (json с mitre описаниями) 
         - файл multi_label.json (данные с репозиториями tram https://github.com/center-for-threat-informed-defense/tram/)
         - папку cti_hal (данные с репозитория https://github.com/dessertlab/CTI-HAL/tree/main/data)
