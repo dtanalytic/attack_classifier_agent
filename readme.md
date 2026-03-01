@@ -1,12 +1,18 @@
 # Настройка
+- git clone https://github.com/dtanalytic/attack_classifier_agent
+- создать окружение и установить зависимости (+ pytorch):
+    - cd attack_classifier_agent
+    - conda create -n temp_env python=3.10.17 (conda env remove -n temp_env)
+    - pip install -r requirements.txt
+    - может понадобиться докачать пакеты nltk: python -c "import nltk;nltk.download('punkt')"
 - добавить данные. Создать папки:
-    - data
+    - data, data/out, data/prod
     - data/external и положить:
         - файл enterprise-attack.json (json с mitre описаниями) 
         - файл multi_label.json (данные с репозиториями tram https://github.com/center-for-threat-informed-defense/tram/)
         - папку cti_hal (данные с репозитория https://github.com/dessertlab/CTI-HAL/tree/main/data)
+        - папку models (sentence bert для создания эмбеддингов текстов)
         - отчеты компании в папку rep_dn       
-- git clone https://github.com/dtanalytic/attack_classifier_agent
 - настроить db (ноутбук notebooks/start.ipynb):
 ```
 from src.prod.train import create_dbs
@@ -24,3 +30,6 @@ pred_l = [''' Tor hidden service on a compromised system.''',
 pred_df = predict(pred_l)
 
 ```
+# Валидация и эксперименты
+- cd attack_classifier_agent
+- dvc repro
